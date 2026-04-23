@@ -1,0 +1,493 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>JRUNLAB | Diagnóstico de Intensidad</title>
+
+  <!-- EmailJS -->
+  <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
+
+  <style>
+    :root {
+      --bg: #000000;
+      --card: #101010;
+      --card-2: #161616;
+      --text: #ffffff;
+      --muted: #b9c0c7;
+      --orange: #f7931e;
+      --orange-dark: #db7f14;
+      --line: rgba(247, 147, 30, 0.18);
+      --danger: #ef4444;
+      --warning: #f59e0b;
+      --success: #22c55e;
+    }
+
+    * { box-sizing: border-box; }
+
+    html, body {
+      margin: 0;
+      padding: 0;
+      background: linear-gradient(180deg, #000 0%, #090909 100%);
+      color: var(--text);
+      font-family: Arial, Helvetica, sans-serif;
+      min-height: 100%;
+    }
+
+    body {
+      padding: 20px;
+    }
+
+    .container {
+      max-width: 860px;
+      margin: 0 auto;
+    }
+
+    .brand {
+      text-align: center;
+      margin: 8px 0 24px;
+    }
+
+    .brand img {
+      width: 100%;
+      max-width: 260px;
+      height: auto;
+    }
+
+    .card {
+      background: linear-gradient(180deg, rgba(18,18,18,0.96) 0%, rgba(10,10,10,0.96) 100%);
+      border: 1px solid var(--line);
+      border-radius: 22px;
+      padding: 30px;
+      box-shadow: 0 18px 50px rgba(0,0,0,0.4);
+      transition: opacity 0.3s ease, transform 0.3s ease;
+    }
+
+    .hidden {
+      display: none;
+    }
+
+    .accent-line {
+      width: 120px;
+      height: 4px;
+      background: var(--orange);
+      border-radius: 999px;
+      margin-bottom: 20px;
+    }
+
+    h1 {
+      margin: 0 0 14px;
+      font-size: 2rem;
+      line-height: 1.12;
+      letter-spacing: -0.02em;
+    }
+
+    h2 {
+      margin: 0 0 12px;
+      font-size: 1.55rem;
+      line-height: 1.2;
+    }
+
+    p {
+      margin: 0 0 12px;
+      line-height: 1.6;
+      color: var(--muted);
+    }
+
+    .lead {
+      color: #fff;
+      font-size: 1.05rem;
+      margin-bottom: 18px;
+    }
+
+    label {
+      display: block;
+      margin: 16px 0 8px;
+      font-weight: 700;
+      color: #fff;
+    }
+
+    input, select {
+      width: 100%;
+      padding: 15px 16px;
+      border-radius: 14px;
+      border: 1px solid #2b2b2b;
+      background: #0c0c0c;
+      color: #fff;
+      font-size: 16px;
+      outline: none;
+    }
+
+    input:focus, select:focus {
+      border-color: var(--orange);
+      box-shadow: 0 0 0 3px rgba(247,147,30,0.12);
+    }
+
+    button {
+      width: 100%;
+      margin-top: 24px;
+      padding: 16px 18px;
+      border: none;
+      border-radius: 14px;
+      background: linear-gradient(180deg, var(--orange) 0%, var(--orange-dark) 100%);
+      color: #000;
+      font-size: 16px;
+      font-weight: 800;
+      cursor: pointer;
+      transition: transform 0.15s ease, opacity 0.15s ease;
+    }
+
+    button:hover {
+      transform: translateY(-1px);
+      opacity: 0.98;
+    }
+
+    .error {
+      color: #ff8d8d;
+      font-weight: 700;
+      margin-top: 14px;
+    }
+
+    .success-box {
+      background: rgba(34,197,94,0.08);
+      border: 1px solid rgba(34,197,94,0.22);
+      border-radius: 16px;
+      padding: 18px;
+      margin-top: 18px;
+    }
+
+    .small {
+      font-size: 0.95rem;
+    }
+
+    .loader {
+      display: inline-block;
+      width: 18px;
+      height: 18px;
+      border: 2px solid rgba(0,0,0,0.2);
+      border-top-color: #000;
+      border-radius: 50%;
+      animation: spin 0.7s linear infinite;
+      vertical-align: middle;
+      margin-right: 8px;
+    }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+
+    @media (max-width: 768px) {
+      body { padding: 16px; }
+      .card { padding: 22px; }
+      h1 { font-size: 1.65rem; }
+      h2 { font-size: 1.35rem; }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="brand">
+      <img src="logo.png" alt="JRUNLAB logo">
+    </div>
+
+    <!-- STEP 1 -->
+    <section class="card" id="step1">
+      <div class="accent-line"></div>
+      <h1>Descubre en 30 segundos si estás entrenando correctamente para mejorar el tiempo en tu prueba</h1>
+      <p class="lead">Introduce cómo distribuyes tu semana y recibe por correo tu diagnóstico con la estructura recomendada para mejorar.</p>
+      <button type="button" onclick="goToStep2()">Empezar</button>
+    </section>
+
+    <!-- STEP 2 -->
+    <section class="card hidden" id="step2">
+      <div class="accent-line"></div>
+      <h2>Cuéntame cómo entrenas</h2>
+      <p>Rellena estos datos para analizar si tu distribución de intensidades está alineada con una mejora real del rendimiento.</p>
+
+      <label for="prueba">Prueba que quieres mejorar</label>
+      <select id="prueba">
+        <option value="">Selecciona una prueba</option>
+        <option value="800m">800m</option>
+        <option value="1500m">1500m</option>
+        <option value="3000m">3000m</option>
+        <option value="5000m">5000m</option>
+        <option value="10K">10K</option>
+        <option value="Media maratón">Media maratón</option>
+        <option value="Maratón">Maratón</option>
+      </select>
+
+      <label for="diasTotales">Días de entrenamiento semanales</label>
+      <input type="number" id="diasTotales" min="1" max="14" placeholder="Ejemplo: 6">
+
+      <label for="diasBelow">Días por debajo de umbral</label>
+      <input type="number" id="diasBelow" min="0" max="14" placeholder="Ejemplo: 3">
+
+      <label for="diasU1">Días de trabajo de umbral 1</label>
+      <input type="number" id="diasU1" min="0" max="14" placeholder="Ejemplo: 1">
+
+      <label for="diasU2">Días de trabajo de umbral 2</label>
+      <input type="number" id="diasU2" min="0" max="14" placeholder="Ejemplo: 1">
+
+      <label for="diasMax">Días máximos</label>
+      <input type="number" id="diasMax" min="0" max="14" placeholder="Ejemplo: 1">
+
+      <div class="error" id="step2Error"></div>
+
+      <button type="button" onclick="validateStep2()">Continuar</button>
+    </section>
+
+    <!-- STEP 3 -->
+    <section class="card hidden" id="step3">
+      <div class="accent-line"></div>
+      <h2>¿Dónde te envío tu diagnóstico?</h2>
+      <p>Te mandaré el resultado con tu análisis y la distribución recomendada para mejorar.</p>
+
+      <label for="nombre">Tu nombre</label>
+      <input type="text" id="nombre" placeholder="Ejemplo: Javier">
+
+      <label for="email">Tu correo electrónico</label>
+      <input type="email" id="email" placeholder="Ejemplo: tuemail@correo.com">
+
+      <div class="error" id="step3Error"></div>
+
+      <button type="button" id="sendBtn" onclick="sendDiagnosisEmail()">Recibir mi diagnóstico</button>
+    </section>
+
+    <!-- STEP 4 -->
+    <section class="card hidden" id="step4">
+      <div class="accent-line"></div>
+      <h2>Listo. Revisa tu correo.</h2>
+      <p>Te he enviado tu diagnóstico con el análisis de tu distribución semanal y la propuesta orientativa para mejorar.</p>
+
+      <div class="success-box">
+        <p><strong>Importante:</strong> si no lo ves en tu bandeja principal, revisa promociones o spam.</p>
+        <p class="small">Después podrás usar ese mismo diagnóstico para llevar al lead a tu secuencia de emails.</p>
+      </div>
+
+      <button type="button" onclick="resetTool()">Volver a empezar</button>
+    </section>
+  </div>
+
+  <script>
+    // =============================
+    // CONFIGURA AQUÍ TUS DATOS EMAILJS
+    // =============================
+    const EMAILJS_PUBLIC_KEY = "TU_PUBLIC_KEY";
+    const EMAILJS_SERVICE_ID = "TU_SERVICE_ID";
+    const EMAILJS_TEMPLATE_ID = "TU_TEMPLATE_ID";
+
+    // Inicialización EmailJS
+    (function () {
+      if (window.emailjs) {
+        emailjs.init({
+          publicKey: EMAILJS_PUBLIC_KEY
+        });
+      }
+    })();
+
+    let formData = {};
+
+    function goToStep2() {
+      document.getElementById("step1").classList.add("hidden");
+      document.getElementById("step2").classList.remove("hidden");
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    }
+
+    function validateStep2() {
+      const prueba = document.getElementById("prueba").value;
+      const diasTotales = Number(document.getElementById("diasTotales").value);
+      const diasBelow = Number(document.getElementById("diasBelow").value);
+      const diasU1 = Number(document.getElementById("diasU1").value);
+      const diasU2 = Number(document.getElementById("diasU2").value);
+      const diasMax = Number(document.getElementById("diasMax").value);
+      const errorBox = document.getElementById("step2Error");
+
+      errorBox.textContent = "";
+
+      if (!prueba) {
+        errorBox.textContent = "Selecciona la prueba que quieres mejorar.";
+        return;
+      }
+
+      if (!diasTotales || diasTotales < 1) {
+        errorBox.textContent = "Introduce un número válido de días de entrenamiento semanales.";
+        return;
+      }
+
+      if ([diasBelow, diasU1, diasU2, diasMax].some(v => isNaN(v) || v < 0)) {
+        errorBox.textContent = "Todos los campos de días deben ser 0 o más.";
+        return;
+      }
+
+      const suma = diasBelow + diasU1 + diasU2 + diasMax;
+
+      if (suma > diasTotales) {
+        errorBox.textContent = "La suma de tus tipos de entrenamiento no puede superar tus días totales semanales.";
+        return;
+      }
+
+      formData = {
+        prueba,
+        diasTotales,
+        diasBelow,
+        diasU1,
+        diasU2,
+        diasMax
+      };
+
+      document.getElementById("step2").classList.add("hidden");
+      document.getElementById("step3").classList.remove("hidden");
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    }
+
+    function calculateDiagnosis(data) {
+      const {
+        diasTotales,
+        diasBelow,
+        diasU1,
+        diasU2,
+        diasMax
+      } = data;
+
+      const pctBelow = diasBelow / diasTotales;
+      const pctU1 = diasU1 / diasTotales;
+      const pctU2 = diasU2 / diasTotales;
+      const pctMax = diasMax / diasTotales;
+
+      const diagnosisLines = [];
+
+      // Regla principal: base por debajo de umbral
+      if (pctBelow < 0.60) {
+        diagnosisLines.push("ESTÁS ENTRENANDO DEMASIADO INTENSO. Tu trabajo por debajo de umbral está por debajo del 60%, lo que indica una base aeróbica insuficiente para sostener una mejora sólida del rendimiento.");
+      } else {
+        diagnosisLines.push("Tu base aeróbica es suficiente. Estás dedicando una parte sólida de la semana al trabajo por debajo de umbral, algo clave para mejorar sin quemarte.");
+      }
+
+      // Regla máximos
+      if (pctMax > 0.15) {
+        diagnosisLines.push("TE PASAS COMPLETAMENTE DE INTENSIDAD, RIESGO DE LESIÓN. Tu volumen de trabajo máximo supera el 15% del total semanal. Eso eleva mucho la fatiga, empeora la recuperación y aumenta el riesgo de lesión.");
+      } else if (diasMax === 0) {
+        diagnosisLines.push("FALTA INTENSIDAD MÁXIMA ENTRENANDO. No aparece trabajo máximo en tu semana. Dependiendo de tu prueba objetivo, puede faltarte un estímulo clave para seguir mejorando.");
+      } else {
+        diagnosisLines.push("Sí estás incluyendo intensidad máxima, y además no se dispara por encima de un volumen excesivo.");
+      }
+
+      // Umbral 1
+      if (pctU1 < 0.20) {
+        diagnosisLines.push("FALTA TRABAJO DE UMBRAL 1. Tu volumen de trabajo en primer umbral está por debajo del 20%, lo que puede limitar tu base de calidad sostenible.");
+      } else {
+        diagnosisLines.push("Tu trabajo de umbral 1 está en un rango útil.");
+      }
+
+      // Umbral 2
+      if (pctU2 < 0.20) {
+        diagnosisLines.push("FALTA TRABAJO DE UMBRAL 2. Tu volumen de trabajo en segundo umbral está por debajo del 20%, lo que puede limitar tu capacidad de sostener ritmos altos de forma específica.");
+      } else {
+        diagnosisLines.push("Tu trabajo de umbral 2 está en un rango útil.");
+      }
+
+      // Tu distribución recomendada
+      let recBelow = Math.round(diasTotales * 0.50);
+      let recU1 = Math.round(diasTotales * 0.20);
+      let recU2 = Math.round(diasTotales * 0.20);
+      let recMax = diasTotales - recBelow - recU1 - recU2;
+
+      if (recMax < 0) recMax = 0;
+
+      return {
+        pctBelow: (pctBelow * 100).toFixed(1),
+        pctU1: (pctU1 * 100).toFixed(1),
+        pctU2: (pctU2 * 100).toFixed(1),
+        pctMax: (pctMax * 100).toFixed(1),
+        diagnosisText: diagnosisLines.join("\n\n"),
+        recBelow,
+        recU1,
+        recU2,
+        recMax
+      };
+    }
+
+    async function sendDiagnosisEmail() {
+      const nombre = document.getElementById("nombre").value.trim();
+      const email = document.getElementById("email").value.trim();
+      const errorBox = document.getElementById("step3Error");
+      const sendBtn = document.getElementById("sendBtn");
+
+      errorBox.textContent = "";
+
+      if (!nombre) {
+        errorBox.textContent = "Introduce tu nombre.";
+        return;
+      }
+
+      if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+        errorBox.textContent = "Introduce un correo válido.";
+        return;
+      }
+
+      const result = calculateDiagnosis(formData);
+
+      const templateParams = {
+        to_name: nombre,
+        to_email: email,
+        prueba: formData.prueba,
+        dias_totales: formData.diasTotales,
+        dias_below: formData.diasBelow,
+        dias_u1: formData.diasU1,
+        dias_u2: formData.diasU2,
+        dias_max: formData.diasMax,
+        pct_below: result.pctBelow,
+        pct_u1: result.pctU1,
+        pct_u2: result.pctU2,
+        pct_max: result.pctMax,
+        diagnostico: result.diagnosisText,
+        rec_below: result.recBelow,
+        rec_u1: result.recU1,
+        rec_u2: result.recU2,
+        rec_max: result.recMax
+      };
+
+      try {
+        sendBtn.disabled = true;
+        sendBtn.innerHTML = '<span class="loader"></span>Enviando...';
+
+        await emailjs.send(
+          EMAILJS_SERVICE_ID,
+          EMAILJS_TEMPLATE_ID,
+          templateParams
+        );
+
+        document.getElementById("step3").classList.add("hidden");
+        document.getElementById("step4").classList.remove("hidden");
+        window.scrollTo({ top: 0, behavior: "smooth" });
+      } catch (error) {
+        console.error(error);
+        errorBox.textContent = "Ha habido un problema al enviar el correo. Revisa la configuración de EmailJS.";
+      } finally {
+        sendBtn.disabled = false;
+        sendBtn.innerHTML = 'Recibir mi diagnóstico';
+      }
+    }
+
+    function resetTool() {
+      document.getElementById("prueba").value = "";
+      document.getElementById("diasTotales").value = "";
+      document.getElementById("diasBelow").value = "";
+      document.getElementById("diasU1").value = "";
+      document.getElementById("diasU2").value = "";
+      document.getElementById("diasMax").value = "";
+      document.getElementById("nombre").value = "";
+      document.getElementById("email").value = "";
+      document.getElementById("step2Error").textContent = "";
+      document.getElementById("step3Error").textContent = "";
+      formData = {};
+
+      document.getElementById("step4").classList.add("hidden");
+      document.getElementById("step3").classList.add("hidden");
+      document.getElementById("step2").classList.add("hidden");
+      document.getElementById("step1").classList.remove("hidden");
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    }
+  </script>
+</body>
+</html>
